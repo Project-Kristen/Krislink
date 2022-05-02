@@ -1,0 +1,28 @@
+{
+  "name": "krislink",
+  "version": "1.0.0-alpha-stage.1",
+  "description": "Krislink is a standalone voice transfer server, inspired by Nexus and Lavalink.",
+  "dependencies": {
+    "@discordjs/opus": "^0.5.3",
+    "@discordjs/voice": "^0.9.0",
+    "ascii-art": "^1.5.1",
+    "chalk": "^4.1.2",
+    "erlpack": "github:discord/erlpack",
+    "express": "^4.17.1",
+    "play-dl": "^1.9.4",
+    "sodium": "^3.0.2",
+    "systeminformation": "^5.9.15",
+    "undici": "^4.7.1",
+    "ws": "^8.2.2",
+    "youtube-sr": "^4.1.9",
+    "ytdl-core": "github:gatecrasher777/node-ytdl-core"
+  },
+  "devDependencies": {
+    "discord.js": "^13.3.1",
+    "dotenv": "^10.0.0"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "test": "node test/client/bot.js"
+  }
+}

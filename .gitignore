@@ -1,0 +1,11 @@
+# Modules
+node_modules
+package-lock.json
+
+# Important
+.env
+.vscode
+.test.config.json
+
+# Misc
+Kristen-Server.zip

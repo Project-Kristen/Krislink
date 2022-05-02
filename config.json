@@ -1,0 +1,42 @@
+{
+    "threadsCount": 6,
+    "http": {
+        "ip": "0.0.0.0",
+        "hostname": "de-1.mino.host",
+        "port": 25000
+    },
+    "ws": {
+        "onlyLocal": false,
+        "safeMode": {
+            "enabled": true,
+            "key": {
+                "type": "rsa",
+                "bits": 1024
+            }
+        }
+    },
+    "authentication": {
+        "type": "password",
+        "config": {
+            "password": {
+                "account": [
+                    {
+                        "username": "admin",
+                        "password": "admin",
+                        "permission": 2147483647
+                    }
+                ]
+            },
+            "publickey": {
+                "account": [
+                    {
+                        "username": "admin",
+                        "hash": "",
+                        "permission": 2147483647
+                    }
+                ]
+            },
+            "none": {}
+        }
+    }
+}
