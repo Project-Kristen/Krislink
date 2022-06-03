@@ -7,5 +7,10 @@ package-lock.json
 .vscode
 .test.config.json
 
+# Scripts
+windows.bat
+linux.sh
+
 # Misc
 Kristen-Server.zip
+Krislink.zip
