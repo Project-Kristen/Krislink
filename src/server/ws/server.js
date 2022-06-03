@@ -136,9 +136,7 @@ module.exports = class WSServer {
                                     ws.close()
                                     break;
                                 case 'password':
-                                    console.log(data)
                                     _user = this.app.configs.authentication.config.password.account.find(u => u.username === data.account && u.password === data.password);
-                                    console.log(_user)
                                     if (!_user) {
                                         return this.send(ws, null, {
                                             type: OPCodes.DISCONNECT,
@@ -221,8 +219,6 @@ module.exports = class WSServer {
                             this.send(ws, null, {
                                 type: OPCodes.PING,
                                 data: {
-                                    origin: performance.timeOrigin,
-                                    unix: Date.now(),
                                     time: performance.now() + performance.timeOrigin
                                 }
                             })
