@@ -7,7 +7,7 @@ module.exports = async (application, user, message) => {
         type: OPCodes.COMMAND_RESPONSE,
         data: {
             op: CommandCodes.USAGE,
-            content: {
+            content: JSON.stringify({
                 cpu: {
                     cores: cpu.physicalCores,
                     threads: cpu.cores,
@@ -30,7 +30,7 @@ module.exports = async (application, user, message) => {
                 users: application.users.length,
                 players: application.users.map(u => u.adapters.size).reduce((a, b) => a + b, 0),
                 pid: process.pid
-            }
+            })
         }
     })
 }
