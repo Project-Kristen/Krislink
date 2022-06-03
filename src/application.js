@@ -70,6 +70,27 @@ class Application extends EventEmitter {
             }
         })
 
+        const handler = () => {
+            console.log("Telling client to disconnect...")
+            for (const user of this.users) {
+                user.send({
+                    type: OPCodes.DISCONNECT,
+                    data: {
+                        message: "Krislink shutdowned."
+                    }
+                })
+            }
+
+            setTimeout(() => process.exit(0), 3000);
+        }
+
+        process.stdin.resume();
+        process.once("SIGINT", handler)
+        process.once("SIGTERM", handler)
+        process.once("SIGHUP", handler)
+        process.once("beforeExit", handler)
+
+
         console.log("Krislink is ready");
     }
 }
