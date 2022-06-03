@@ -83,6 +83,24 @@ bot.on('messageCreate', message => {
     if (message.author.bot) return;
 
     if (message.content.startsWith('k7!play')) {
+        if (!message.member.voice.channel) return message.channel.send({
+            embeds: [
+                new MessageEmbed()
+                    .setAuthor(`請先加入一個語音頻道`, bot.user.displayAvatarURL())
+                    .setColor('FF0727')
+                    .setFooter(`Powered By Kristen Network`)
+            ]
+        });
+
+        if (!message.content.split(' ')[1]) return message.channel.send({
+            embeds: [
+                new MessageEmbed()
+                    .setAuthor(`用法: k7!play <args>`, bot.user.displayAvatarURL())
+                    .setColor('FF0727')
+                    .setFooter(`Powered By Kristen Network`)
+            ]
+        });
+
         client.send({
             type: OPCodes.COMMAND,
             data: {
@@ -245,6 +263,20 @@ bot.on('messageCreate', message => {
                     .setFooter(`Powered By Kristen Network`)
             ]
         })
+    } else if (message.content.startsWith('k7!stats')) {
+        client.send({
+            type: OPCodes.COMMAND,
+            data: {
+                session: client.session,
+                message: {
+                    op: CommandCodes.USAGE
+                }
+            }
+        })
+
+        client.collect('commandResponse', (data) => data.op === CommandCodes.USAGE, 5e3).then(res => {
+            message.channel.send({ content: "```" + JSON.stringify(JSON.parse(res.content), null, 2) + "```"})
+        }).catch(console.log)
     }
 })
 
