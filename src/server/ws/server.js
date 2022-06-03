@@ -4,7 +4,6 @@ const { WebSocketServer } = require('ws');
 const Crypto = require('../../utils/Crypto');
 const User = require('../../user');
 
-const SimpleCache = require('../../../libs/simple-cache/Cache');
 const { Player } = require('../../../libs/ez-music-lib');
 
 module.exports = class WSServer {
@@ -16,7 +15,9 @@ module.exports = class WSServer {
             server: http
         })
 
-        this.verifed = new SimpleCache();
+        this.verifed = new Map(); // replaced with Map for significant performance boost
+        this.pingPong = new Map(); // this is for pong time-out
+        this.scheduledPing = new Map(); // this is for ping.
 
         // If config.onlyLocal is on, we should only allow connections from localhost
         this._ws.on('connection', (ws, req) => {
@@ -135,7 +136,9 @@ module.exports = class WSServer {
                                     ws.close()
                                     break;
                                 case 'password':
-                                    _user = this.app.configs.authentication.config.password.account.find(u => u.account === data.account && u.password === data.password);
+                                    console.log(data)
+                                    _user = this.app.configs.authentication.config.password.account.find(u => u.username === data.account && u.password === data.password);
+                                    console.log(_user)
                                     if (!_user) {
                                         return this.send(ws, null, {
                                             type: OPCodes.DISCONNECT,
@@ -153,7 +156,7 @@ module.exports = class WSServer {
                                     }) // An hacky way to tell the client to HELLO again
                                     break;
                                 case 'publickey':
-                                    _user = this.app.configs.authentication.config.password.account.find(u => u.account === data.account && u.hash === data.hash);
+                                    _user = this.app.configs.authentication.config.password.account.find(u => u.username === data.account && u.hash === data.hash);
                                     if (!_user) {
                                         return this.send(ws, null, {
                                             type: OPCodes.DISCONNECT,
@@ -214,6 +217,29 @@ module.exports = class WSServer {
 
                         this.app.players.set(newUser, new Player(newUser, this.app.workerPool))
 
+                        const ping = setInterval(() => {
+                            this.send(ws, null, {
+                                type: OPCodes.PING,
+                                data: {
+                                    origin: performance.timeOrigin,
+                                    unix: Date.now(),
+                                    time: performance.now() + performance.timeOrigin
+                                }
+                            })
+
+                            const pending = setTimeout(() => {
+                                clearInterval(ping)
+                                clearTimeout(pending)
+
+                                this.app.users = this.app.users.filter(user => user.session !== newUser.session)
+                                ws.terminate();
+
+                                console.log("User " + newUser.session + " failed to complete ping-pong in time.")
+                            }, 15000);
+
+                            this.pingPong.set(newUser.session, pending);
+                        }, 30000)
+
                         this.send(ws, null, {
                             type: OPCodes.HELLO,
                             data: {
@@ -230,6 +256,15 @@ module.exports = class WSServer {
                         break;
                     case OPCodes.DISCONNECT:
                         this.app.users = this.app.users.filter(user => user.session !== data.session)
+                        if (this.pingPong.has(user.session)) {
+                            clearTimeout(this.pingPong.get(user.session))
+                            this.pingPong.delete(user.session)
+                        }
+
+                        if (this.scheduledPing.has(user.session)) {
+                            clearInterval(this.scheduledPing.get(user.session))
+                            this.scheduledPing.delete(user.session)
+                        }
                         ws.close()
                         break;
                     case OPCodes.RECONNECT: // Imagine Client call Server to reconnect
@@ -296,6 +331,9 @@ module.exports = class WSServer {
                         }
                         break;
                     case OPCodes.PONG:
+                        if (!this.pingPong.has(user.session)) return console.log("User " + user.session + " tried to pong but no ping response is required for it.");
+                        clearTimeout(this.pingPong.get(user.session));
+                        this.pingPong.delete(user.session);
                         this.send(ws, data.session, {
                             type: OPCodes.OKAY,
                             data: {

@@ -5,7 +5,7 @@ const WebSocket = require('ws');
 
 const Crypto = require('../../src/utils/Crypto')
 
-const config = require('../../config.json');
+const config = process.env.test ? require("./.test.config.json") : require('../../config.json');
 const OPCodes = require('../../src/server/ws/OPCodes');
 
 class Client extends EventEmitter {
@@ -24,6 +24,11 @@ class Client extends EventEmitter {
                 data: {
                      ack: 1
                 }
+            })
+
+            this.ws.on('close', () => {
+                this.ws.close()
+                this.emit('close')
             })
 
             this.ws.on('message', (message) => {
@@ -135,6 +140,15 @@ class Client extends EventEmitter {
                         break;
                     case OPCodes.COMMAND_RESPONSE:
                         this.emit('commandResponse', data)
+                        break;
+                    case OPCodes.PING:
+                        this.send({
+                            type: OPCodes.PONG,
+                            data: {
+                                session: this.session,
+                                delay: (performance.now() + performance.timeOrigin) - data.time
+                            }
+                        });
                         break;
                 }
             })
