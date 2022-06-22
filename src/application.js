@@ -67,6 +67,9 @@ class Application extends EventEmitter {
                 case CommandCodes.VOLUME:
                     require('./commands/volume')(this, user, message);
                     break;
+                case CommandCodes.LYRICS:
+                    require('./commands/lyrics')(this, user, message);
+                    break;
             }
         })
 
