@@ -169,11 +169,11 @@ class Player extends EventEmitter {
         })
     }
 
-    queueLoop(guildId) {
+    queueLoop(guildId, forceOverride) {
         return new Promise((resolve, reject) => {
             const queue = this.queue.find(q => q.guildId === guildId);
             if (queue) {
-                queue.queueLoop = !queue.queueLoop;
+                queue.queueLoop = forceOverride ?? !queue.queueLoop;
                 queue.queueCache = [queue.playing, ...queue.tracks]
                 return resolve(queue.queueLoop);
             } else {
@@ -182,12 +182,12 @@ class Player extends EventEmitter {
         })
     }
 
-    loop(guildId) {
+    loop(guildId, forceOverride) {
         return new Promise((resolve, reject) => {
             const queue = this.queue.find(q => q.guildId === guildId);
 
             if (queue) {
-                queue.loop = !queue.loop;
+                queue.loop = forceOverride ?? !queue.loop;
                 return resolve(queue.loop);
             } else {
                 return reject(new Error("Queue not found"))

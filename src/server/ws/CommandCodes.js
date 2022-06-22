@@ -23,6 +23,9 @@ module.exports = {
 
     // Getter
     USAGE: 400,
+
+    // Other
+    LYRICS: 500,
     
     // Event
     QUEUE_END_EVENT: 1000

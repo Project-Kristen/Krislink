@@ -3,13 +3,13 @@ const OPCodes = require('../server/ws/OPCodes')
 
 module.exports = (application, user, message) => {
     application.players.get(user)
-      .loop(message.guildId)
+      .loop(message.guildId, message.override)
       .then((t) => {
         user.send({
             type: OPCodes.COMMAND_RESPONSE,
             data: {
                 op: CommandCodes.REPEAT,
-                content: 'ok|' + message.guildId
+                content: 'ok|' + message.guildId + '|' + t
             }
         })
       })
