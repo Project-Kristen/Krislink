@@ -86,18 +86,18 @@ bot.on('messageCreate', message => {
         if (!message.member.voice.channel) return message.channel.send({
             embeds: [
                 new MessageEmbed()
-                    .setAuthor(`請先加入一個語音頻道`, bot.user.displayAvatarURL())
+                    .setAuthor({ name: `請先加入一個語音頻道`, iconURL: bot.user.displayAvatarURL() })
                     .setColor('FF0727')
-                    .setFooter(`Powered By Kristen Network`)
+                    .setFooter({ text: `Powered By Kristen Network` })
             ]
         });
 
         if (!message.content.split(' ')[1]) return message.channel.send({
             embeds: [
                 new MessageEmbed()
-                    .setAuthor(`用法: k7!play <args>`, bot.user.displayAvatarURL())
+                    .setAuthor({ name: `用法: k7!play <args>`, iconURL: bot.user.displayAvatarURL() })
                     .setColor('FF0727')
-                    .setFooter(`Powered By Kristen Network`)
+                    .setFooter({ text: `Powered By Kristen Network` })
             ]
         });
 
@@ -122,18 +122,18 @@ bot.on('messageCreate', message => {
                 message.channel.send({
                     embeds: [
                         new MessageEmbed()
-                            .setAuthor(`播放中 | ${data.title}`, bot.user.displayAvatarURL(), data.url)
+                            .setAuthor({ name: `播放中 | ${data.title}`, iconURL: bot.user.displayAvatarURL(), url: data.url })
                             .setColor('FF0727')
-                            .setFooter(`Powered By Kristen Network`)
+                            .setFooter({ text: `Powered By Kristen Network` })
                     ]
                 })
             } else {
                 message.channel.send({
                     embeds: [
                         new MessageEmbed()
-                            .setAuthor(`已加入至隊列 | ${data.title}`, bot.user.displayAvatarURL(), data.url)
+                            .setAuthor({ name: `已加入至隊列 | ${data.title}`, iconURL: bot.user.displayAvatarURL(), url: data.url })
                             .setColor('FF0727')
-                            .setFooter(`Powered By Kristen Network`)
+                            .setFooter({ text: `Powered By Kristen Network` })
                     ]
                 })
             }
@@ -174,9 +174,9 @@ bot.on('messageCreate', message => {
             message.channel.send({
                 embeds: [
                     new MessageEmbed()
-                        .setAuthor(`搜尋結果 | ${message.content.substring(9)}`, bot.user.displayAvatarURL())
+                        .setAuthor({ name: `搜尋結果 | ${message.content.substring(9)}`, iconURL: bot.user.displayAvatarURL() })
                         .setColor('FF0727')
-                        .setFooter(`Powered By Kristen Network`)
+                        .setFooter({ text: `Powered By Kristen Network` })
                         .setDescription(data.map(d => `[${d.title}](${d.url})`).join("\n"))
                 ]
             })
@@ -197,9 +197,9 @@ bot.on('messageCreate', message => {
         message.channel.send({
             embeds: [
                 new MessageEmbed()
-                    .setAuthor(`停止播放 | 感謝您使用 Kristen v7!`, bot.user.displayAvatarURL())
+                    .setAuthor({ name: `停止播放 | 感謝您使用 Kristen v7!`, iconURL: bot.user.displayAvatarURL() })
                     .setColor('FF0727')
-                    .setFooter(`Powered By Kristen Network`)
+                    .setFooter({ text: `Powered By Kristen Network` })
             ]
         })
     } else if (message.content.startsWith('k7!pause')) {
@@ -217,9 +217,9 @@ bot.on('messageCreate', message => {
         message.channel.send({
             embeds: [
                 new MessageEmbed()
-                    .setAuthor(`暫停播放 | 感謝您使用 Kristen v7!`, bot.user.displayAvatarURL())
+                    .setAuthor({ name: `暫停播放 | 感謝您使用 Kristen v7!`, iconURL: bot.user.displayAvatarURL() })
                     .setColor('FF0727')
-                    .setFooter(`Powered By Kristen Network`)
+                    .setFooter({ text: `Powered By Kristen Network` })
             ]
         })
     } else if (message.content.startsWith('k7!resume')) {
@@ -237,9 +237,9 @@ bot.on('messageCreate', message => {
         message.channel.send({
             embeds: [
                 new MessageEmbed()
-                    .setAuthor(`繼續播放 | 感謝您使用 Kristen v7!`, bot.user.displayAvatarURL())
+                    .setAuthor({ name: `繼續播放 | 感謝您使用 Kristen v7!`, iconURL: bot.user.displayAvatarURL() })
                     .setColor('FF0727')
-                    .setFooter(`Powered By Kristen Network`)
+                    .setFooter({ text: `Powered By Kristen Network` })
             ]
         })
     } else if (message.content.startsWith('k7!volume')) {
@@ -258,9 +258,9 @@ bot.on('messageCreate', message => {
         message.channel.send({
             embeds: [
                 new MessageEmbed()
-                    .setAuthor(`設定音量至 ${Number(message.content.substring(10))} | 感謝您使用 Kristen v7!`, bot.user.displayAvatarURL())
+                    .setAuthor({ name: `設定音量至 ${Number(message.content.substring(10))} | 感謝您使用 Kristen v7!`, iconURL: bot.user.displayAvatarURL() })
                     .setColor('FF0727')
-                    .setFooter(`Powered By Kristen Network`)
+                    .setFooter({ text: `Powered By Kristen Network` })
             ]
         })
     } else if (message.content.startsWith('k7!stats')) {
