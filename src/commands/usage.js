@@ -27,6 +27,7 @@ module.exports = async (application, user, message) => {
                     discordjs: require('discord.js').version,
                     krislink: application.version
                 },
+                availableWorker: application.workerPool._workers.filter(worker => worker.status === "idle").length,
                 users: application.users.length,
                 players: application.users.map(u => u.adapters.size).reduce((a, b) => a + b, 0),
                 pid: process.pid
