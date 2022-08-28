@@ -10,6 +10,7 @@
     "cheerio": "^1.0.0-rc.11",
     "erlpack": "github:discord/erlpack",
     "express": "^4.17.1",
+    "ffmpeg-static": "^4.4.1",
     "play-dl": "^1.9.5",
     "sodium": "^3.0.2",
     "systeminformation": "^5.9.15",

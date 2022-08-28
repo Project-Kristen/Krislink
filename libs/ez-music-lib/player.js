@@ -116,14 +116,14 @@ class Player extends EventEmitter {
 
     search(query, options = {}) {
         return new Promise((resolve, reject) => {
-            return this.workerPool.scheduleTask(path.resolve(process.cwd(), "src/workers/search.js"), { data: { query, returnOne: options.returnOne } })
+            return this.workerPool.scheduleTask(path.resolve(process.cwd(), "src/workers/search.js"), { data: { query, options } })
                 .then(res => {
                     return resolve(res instanceof Array ? res.map(r => new Track(r)) : new Track(res))
                 }).catch(reject)
         })
     }
 
-    play(guildId, voiceChannelId, query, requesterId) {
+    play(guildId, voiceChannelId, query, requesterId, source='youtube') {
         return new Promise((resolve, reject) => {
             const voiceConnection = this.join(guildId, voiceChannelId);
             let queue = this.queue.find(queue => queue.guildId === guildId)/* ?? (() => {
@@ -140,13 +140,13 @@ class Player extends EventEmitter {
             }
 
             if (queue.playing) {
-                this.search(query, { returnOne: true }).then(res => {
+                this.search(query, { returnOne: true, source }).then(res => {
                     res.requesterId = requesterId;
                     queue.enqueue(res);
                     return resolve(res)
                 })
             } else {
-                this.search(query, { returnOne: true }).then(res => {
+                this.search(query, { returnOne: true, source }).then(res => {
                     res.requesterId = requesterId;
                     queue.enqueue(res);
                     this._initizeQueue(queue);

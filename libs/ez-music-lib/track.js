@@ -102,9 +102,9 @@ function FFmpegSeek(stream, seekTime) {
     ffmpeg.stdout.resume();
   });
 
-  stream.pipe(ffmpeg.stdin)
+  stream.pipe(ffmpeg.stdin);
 
-  return ffmpeg.stdout
+  return ffmpeg.stdout;
 }
 
 class Track {
@@ -117,11 +117,17 @@ class Track {
     this.durationInMS = parseTimeToMS(this.duration);
     this.thumbnail = data.thumbnail;
 
+    this.source = data.source ?? 'youtube';
+
     this.requesterId = null;
   }
 
   extract(properties) {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
+      if (this.source === 'soundcloud') {
+        const clientID = await play.getFreeClientID();
+        await play.setToken({ soundcloud: { client_id: clientID } });
+      }
       play.stream(this.url).then(info => {
         var ffmpeg = properties?.seek ? FFmpegSeek(info.stream, msToHHMMSS(properties?.seek)) : info.stream
 
