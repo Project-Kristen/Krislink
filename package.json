@@ -1,7 +1,7 @@
 {
   "name": "krislink",
   "version": "1.0.0-alpha-stage.1",
-  "description": "Krislink is a standalone voice transfer server, inspired by Nexus and Lavalink.",
+  "description": "Krislink is a standalone voice server, inspired by Nexus and Lavalink.",
   "dependencies": {
     "@discordjs/opus": "^0.5.3",
     "@discordjs/voice": "^0.9.0",
@@ -21,8 +21,9 @@
   },
   "devDependencies": {
     "@discordjs/rest": "^0.5.0",
+    "diff": "^5.1.0",
     "discord-api-types": "^0.34.0",
-    "discord.js": "^13.8.0",
+    "discord.js": "^13.10.3",
     "dotenv": "^10.0.0"
   },
   "scripts": {
