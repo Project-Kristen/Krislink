@@ -17,6 +17,8 @@ module.exports = (application, user, message) => {
         })
       })
       .catch((e) => {
+        application.logger.log('error', e);
+        
         user.send({
           type: OPCodes.COMMAND_RESPONSE,
           data: {
@@ -26,6 +28,8 @@ module.exports = (application, user, message) => {
         })
       })
   } catch (e) {
+    application.logger.log('error', e);
+
     user.send({
       type: OPCodes.COMMAND_RESPONSE,
       data: {

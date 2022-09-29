@@ -6,6 +6,7 @@ const HttpServer = require('./server/http/server');
 const WorkerPool = require('./utils/WorkerPool');
 const OPCodes = require('./server/ws/OPCodes');
 const CommandCodes = require('./server/ws/CommandCodes');
+const { getLogger } = require('../libs/fox-logger/logger');
 
 class Application extends EventEmitter {
     constructor(options) {
@@ -21,6 +22,8 @@ class Application extends EventEmitter {
 
         this.configs = options;
 
+        this.logger = getLogger('application');
+
         this.workerPool = new WorkerPool(options.threadsCount);
 
         this.httpServer = new HttpServer(this, options.http);
@@ -33,7 +36,7 @@ class Application extends EventEmitter {
                     data: {
                         message: "Please provided 'op' for commands."
                     }
-                })
+                });
             }
 
             switch (message.op) {
@@ -74,27 +77,27 @@ class Application extends EventEmitter {
         })
 
         const handler = () => {
-            console.log("Telling client to disconnect...")
+            this.logger.log('info', "Telling client to disconnect...");
             for (const user of this.users) {
                 user.send({
                     type: OPCodes.DISCONNECT,
                     data: {
                         message: "Krislink shutdowned."
                     }
-                })
+                });
             }
 
             setTimeout(() => process.exit(0), 3000);
         }
 
         process.stdin.resume();
-        process.once("SIGINT", handler)
-        process.once("SIGTERM", handler)
-        process.once("SIGHUP", handler)
-        process.once("beforeExit", handler)
 
+        process.once("SIGINT", handler);
+        process.once("SIGTERM", handler);
+        process.once("SIGHUP", handler);
+        process.once("beforeExit", handler);
 
-        console.log("Krislink is ready");
+        this.logger.log('info', "Krislink is ready");
     }
 }
 

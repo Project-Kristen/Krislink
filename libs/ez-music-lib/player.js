@@ -19,9 +19,9 @@ class Player extends EventEmitter {
     }
 
     join(guildId, voiceChannelId, selfDeaf = true) {
-        console.log(guildId, !!getVoiceConnection(guildId))
+        this.emit('debug', guildId, !!getVoiceConnection(guildId));
         if (!getVoiceConnection(guildId)) { // check if already in voice channel
-            console.log(this.client.adapters)
+            this.emit('debug', this.client.adapters);
             // if not
             return joinVoiceChannel({
                 channelId: voiceChannelId,
@@ -55,8 +55,8 @@ class Player extends EventEmitter {
     disconnect(guildId) {
         return new Promise((resolve, reject) => {
             if (getVoiceConnection(guildId)) {
-                this.queue.find(q => q.guildId === guildId).handleEmpty()
-                this.queue = this.queue.filter(q => q.guildId !== guildId)
+                this.queue.find(q => q.guildId === guildId).handleEmpty();
+                this.queue = this.queue.filter(q => q.guildId !== guildId);
                 return resolve(true);
             } else {
                 return resolve(false);
@@ -67,8 +67,8 @@ class Player extends EventEmitter {
     stop(guildId) {
         return new Promise((resolve, reject) => {
             if (getVoiceConnection(guildId)) {
-                this.queue.find(q => q.guildId === guildId).handleEmpty()
-                this.queue = this.queue.filter(q => q.guildId !== guildId)
+                this.queue.find(q => q.guildId === guildId).handleEmpty();
+                this.queue = this.queue.filter(q => q.guildId !== guildId);
                 return resolve(true);
             } else {
                 return resolve(false);
@@ -78,11 +78,11 @@ class Player extends EventEmitter {
 
     pause(guildId) {
         return new Promise((resolve, reject) => {
-            var queue = this.queue.find(q => q.guildId === guildId)
+            var queue = this.queue.find(q => q.guildId === guildId);
             if (queue && !queue.paused) {
-                queue.audioPlayer.pause()
-                queue.paused = true
-                return resolve(true)
+                queue.audioPlayer.pause();
+                queue.paused = true;
+                return resolve(true);
             } else {
                 return reject(new Error("Queue is not playing or already paused"))
             }
@@ -93,23 +93,23 @@ class Player extends EventEmitter {
         return new Promise((resolve, reject) => {
             const queue = this.queue.find(q => q.guildId === guildId);
             if (queue) {
-                queue.resource.volume.setVolumeLogarithmic(volume / 100)
+                queue.resource.volume.setVolumeLogarithmic(volume / 100);
                 return resolve(true);
             } else {
-                return reject(new Error("Queue not found"))
+                return reject(new Error("Queue not found"));
             }
         })
     }
 
     resume(guildId) {
         return new Promise((resolve, reject) => {
-            var queue = this.queue.find(q => q.guildId === guildId)
+            var queue = this.queue.find(q => q.guildId === guildId);
             if (queue && queue.paused) {
-                queue.audioPlayer.unpause()
-                queue.paused = false
-                return resolve(true)
+                queue.audioPlayer.unpause();
+                queue.paused = false;
+                return resolve(true);
             } else {
-                return reject(new Error("Queue is not playing or paused"))
+                return reject(new Error("Queue is not playing or paused"));
             }
         })
     }
@@ -123,7 +123,7 @@ class Player extends EventEmitter {
         })
     }
 
-    play(guildId, voiceChannelId, query, requesterId, source='youtube') {
+    play(guildId, voiceChannelId, query, requesterId, source = 'youtube') {
         return new Promise((resolve, reject) => {
             const voiceConnection = this.join(guildId, voiceChannelId);
             let queue = this.queue.find(queue => queue.guildId === guildId)/* ?? (() => {
@@ -132,10 +132,11 @@ class Player extends EventEmitter {
                 return q; // little trick to make it work
             })();*/
 
-            console.log(queue)
+            this.emit('debug', queue);
 
             if (!queue) {
                 queue = new Queue(guildId, voiceConnection);
+                queue.on('debug', this.emit.bind(this, 'debug'));
                 this.queue.push(queue);
             }
 
@@ -143,7 +144,7 @@ class Player extends EventEmitter {
                 this.search(query, { returnOne: true, source }).then(res => {
                     res.requesterId = requesterId;
                     queue.enqueue(res);
-                    return resolve(res)
+                    return resolve(res);
                 })
             } else {
                 this.search(query, { returnOne: true, source }).then(res => {
@@ -151,7 +152,7 @@ class Player extends EventEmitter {
                     queue.enqueue(res);
                     this._initizeQueue(queue);
                     queue.once("destory", () => this.emit("destroy", queue))
-                    return resolve(res)
+                    return resolve(res);
                 })
             }
         })
@@ -161,10 +162,10 @@ class Player extends EventEmitter {
         return new Promise((resolve, reject) => {
             const queue = this.queue.find(q => q.guildId === guildId);
             if (queue) {
-                queue.additionalStreamTime = seek
+                queue.additionalStreamTime = seek;
                 return this.update(queue, { seek }).then(resolve).catch(reject);
             } else {
-                return reject(new Error("Queue not found"))
+                return reject(new Error("Queue not found"));
             }
         })
     }
@@ -177,7 +178,7 @@ class Player extends EventEmitter {
                 queue.queueCache = [queue.playing, ...queue.tracks]
                 return resolve(queue.queueLoop);
             } else {
-                return reject(new Error("Queue not found"))
+                return reject(new Error("Queue not found"));
             }
         })
     }
@@ -190,7 +191,7 @@ class Player extends EventEmitter {
                 queue.loop = forceOverride ?? !queue.loop;
                 return resolve(queue.loop);
             } else {
-                return reject(new Error("Queue not found"))
+                return reject(new Error("Queue not found"));
             }
         })
     }
@@ -207,7 +208,7 @@ class Player extends EventEmitter {
                 queue.unshift(queue.previousCache.shift());
                 return queue.handleNext(true).then(resolve).catch(reject);
             } else {
-                return reject(new Error("No previous track or queue is not playing"))
+                return reject(new Error("No previous track or queue is not playing"));
             }
         })
     }
@@ -220,7 +221,7 @@ class Player extends EventEmitter {
                     queue.unshift(queue.tracks.shift());
                     return queue.handleNext(true).then(resolve).catch(reject);
                 } else {
-                    return reject(new Error("No next track or queue is not playing"))
+                    return reject(new Error("No next track or queue is not playing"));
                 }
             } else {
                 return queue.handleNext(true).then(resolve).catch(reject);
@@ -238,7 +239,7 @@ class Player extends EventEmitter {
     _initizeQueue(queue) {
         queue.handleNext().then(() => { })
         queue.once('destroy', () => {
-            this.queue = this.queue.filter(q => q.guildId !== queue.guildId)
+            this.queue = this.queue.filter(q => q.guildId !== queue.guildId);
         })
     }
 }

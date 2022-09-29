@@ -5,6 +5,7 @@ const Crypto = require('../../utils/Crypto');
 const User = require('../../user');
 
 const { Player } = require('../../../libs/ez-music-lib');
+const { getLogger } = require('../../../libs/fox-logger/logger');
 
 module.exports = class WSServer {
     constructor(application, http, config) {
@@ -18,6 +19,8 @@ module.exports = class WSServer {
         this.verifed = new Map(); // replaced with Map for significant performance boost
         this.pingPong = new Map(); // this is for pong time-out
         this.scheduledPing = new Map(); // this is for ping.
+
+        this.logger = getLogger('websocket');
 
         // If config.onlyLocal is on, we should only allow connections from localhost
         this._ws.on('connection', (ws, req) => {
@@ -37,7 +40,7 @@ module.exports = class WSServer {
             // Ws on message
             ws.on('message', async message => {
                 const jdata = JSON.parse(message.toString());
-                jdata.type === OPCodes.ENCRYPTED ?? console.log(jdata);
+                jdata.type === OPCodes.ENCRYPTED ?? this.logger.log('debug', jdata);
 
                 var { type, data } = jdata;
 
@@ -75,7 +78,7 @@ module.exports = class WSServer {
                     else {
                         var decryptedMessage = Crypto.decrypt(user.serverPrivateKey, data.session, data.encryptedMessage)
                         var { type, data } = JSON.parse(decryptedMessage)
-                        console.log(type, data)
+                        this.logger.log('debug', type, data);
                     }
                 }
 
@@ -206,14 +209,23 @@ module.exports = class WSServer {
                             })
                         }
 
-                        console.log("User established connection successfully.");
-                        var newUser = new User(this, ws)
+                        this.logger.log('verbose', `User(${data.userId}) established connection successfully.`);
 
-                        newUser.id = data.userId
+                        var newUser = new User(this, ws);
 
-                        this.app.users.push(newUser)
+                        newUser.id = data.userId;
 
-                        this.app.players.set(newUser, new Player(newUser, this.app.workerPool))
+                        this.app.users.push(newUser);
+
+                        const player = new Player(newUser, this.app.workerPool);
+
+                        const playerLogger = getLogger('player(uid=' + data.userId + ')'); // debug
+
+                        player.on('debug', (...info) => {
+                            playerLogger.log('debug', ...info);
+                        });
+
+                        this.app.players.set(newUser, player);
 
                         const ping = setInterval(() => {
                             this.send(ws, null, {
@@ -230,7 +242,7 @@ module.exports = class WSServer {
                                 this.app.users = this.app.users.filter(user => user.session !== newUser.session)
                                 ws.terminate();
 
-                                console.log("User " + newUser.session + " failed to complete ping-pong in time.")
+                                this.logger.log('verbose', "User " + newUser.session + " failed to complete ping-pong in time.")
                             }, 15000);
 
                             this.pingPong.set(newUser.session, pending);
@@ -276,6 +288,7 @@ module.exports = class WSServer {
                         if (data.publicKey) {
                             // If config.safeMode.enabled is true, generate a rsa key pair and send it to the client
                             if (config.safeMode.enabled && !user.clientPublicKey) {
+                                const startMs = performance.now();
                                 Crypto.generateKeyPair(config.safeMode.key.type, config.safeMode.key.bits, data.session).then(({ publicKey, privateKey }) => {
                                     user.serverPublicKey = publicKey;
                                     user.serverPrivateKey = privateKey;
@@ -288,6 +301,8 @@ module.exports = class WSServer {
                                         }
                                     })
                                 });
+
+                                this.logger.log('debug', `${config.safeMode.key.bits} took ${performance.now() - startMs}ms to generate.`);
                             } else if (user) {
                                 this.send(ws, data.session, {
                                     type: OPCodes.INVALID,
@@ -327,7 +342,7 @@ module.exports = class WSServer {
                         }
                         break;
                     case OPCodes.PONG:
-                        if (!this.pingPong.has(user.session)) return console.log("User " + user.session + " tried to pong but no ping response is required for it.");
+                        if (!this.pingPong.has(user.session)) return this.logger.log('verbose', "User " + user.session + " tried to pong but no ping response is required for it.");
                         clearTimeout(this.pingPong.get(user.session));
                         this.pingPong.delete(user.session);
                         this.send(ws, data.session, {
@@ -351,7 +366,7 @@ module.exports = class WSServer {
                         })
                         break;
                     case OPCodes.ERROR:
-                        console.log("Got ERROR From " + remoteAddress);
+                        this.logger.log('debug', "Got ERROR From " + remoteAddress);
                         this.send(ws, data.session, {
                             type: OPCodes.OKAY,
                             data: {
@@ -360,10 +375,10 @@ module.exports = class WSServer {
                         })
                         break;
                     case OPCodes.OKAY:
-                        console.log("Got OKAY From " + remoteAddress);
+                        this.logger.log('debug', "Got OKAY From " + remoteAddress);
                         break;
                     case OPCodes.INVALID:
-                        console.log("Got INVALID From " + remoteAddress);
+                        this.logger.log('debug', "Got INVALID From " + remoteAddress);
                         break;
                     case OPCodes.DJS_VOICE_STATE_UPDATE:
                         if (data.d.guild_id && data.d.session_id && data.d.user_id === user.id) user.adapters.get(data.d.guild_id)?.onVoiceStateUpdate(data.d)
@@ -372,7 +387,7 @@ module.exports = class WSServer {
                         user.adapters.get(data.d.guild_id)?.onVoiceServerUpdate(data.d)
                         break;
                     default:
-                        console.log("Unknown From " + remoteAddress);
+                        this.logger.log('debug', "Unknown From " + remoteAddress);
                         this.send(ws, data.session, {
                             type: OPCodes.UNKNOWN_OPCODE,
                             data: {
@@ -386,7 +401,7 @@ module.exports = class WSServer {
     }
 
     send(ws, session, data) {
-        console.log("[Server]", data)
+        this.logger.log('debug', "[Server]", data)
         if (this.config.safeMode.enabled && session && data.type !== OPCodes.KEY_EXCHANGE) {
             var user = this.app.users.find(u => u.session === session)
             var encryptedMessage = Crypto.encrypt(user.clientPublicKey, session, JSON.stringify(data))

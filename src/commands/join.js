@@ -16,8 +16,9 @@ module.exports = (application, user, message) => {
             }
         })
     }).catch((e) => {
-        console.log(e)
+        application.logger.log('error', e);
         vc.destroy();
+
         user.send({
             type: OPCodes.COMMAND_RESPONSE,
             data: {

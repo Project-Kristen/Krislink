@@ -1,10 +1,13 @@
 const http = require('http');
 const express = require('express');
+const { getLogger, getExpressMiddlewareLogger } = require('../../../libs/fox-logger/logger');
 
 module.exports = class HTTPServer {
     constructor(application, config) {
         this.app = application;
         this.config = config;
+
+        this.logger = getLogger('http');
         
         const app = express();
         /**
@@ -31,7 +34,10 @@ module.exports = class HTTPServer {
             }
             next();
         }
+
         app.use(express.json());
+
+        app.use(getExpressMiddlewareLogger('http'));
 
         app.get('/', (req, res) => {
             res.status(200).send('Kristen-Server/' + application.version);
@@ -42,7 +48,7 @@ module.exports = class HTTPServer {
         this.server = http.createServer(app)
         
         this.server.listen(config.port, config.ip, () => {
-            console.log('HTTP Server started on port ' + config.port);
+            this.logger.log('info', 'HTTP Server started on port ' + config.port);
         })
     }
 }

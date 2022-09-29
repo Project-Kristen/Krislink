@@ -1,4 +1,3 @@
-const zlib = require('zlib');
 const crypto = require('crypto');
 
 module.exports = class Crypto {
@@ -64,7 +63,6 @@ module.exports = class Crypto {
     }
 
     static generateKeyPair(type, bits, passphrase) {
-        var p = Date.now();
         return new Promise((resolve, reject) => {
             crypto.generateKeyPair(type, {
                 modulusLength: bits,
@@ -82,7 +80,6 @@ module.exports = class Crypto {
                 if (err) {
                     reject(err);
                 } else {
-                    console.log(`${bits}bit took ${Date.now() - p}`)
                     resolve({ publicKey, privateKey });
                 }
             });

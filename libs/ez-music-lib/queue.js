@@ -37,8 +37,8 @@ class Queue extends EventEmitter {
 
         voiceConnection.subscribe(this.audioPlayer);
 
-        this.audioPlayer.on('debug', console.log)
-        this.audioPlayer.on('stateChange', (state1, state2) => this._handleState(state1, state2))
+        this.audioPlayer.on('debug', this.emit.bind(this, 'debug'));
+        this.audioPlayer.on('stateChange', (state1, state2) => this._handleState(state1, state2));
     }
 
     enqueue(item) {
@@ -53,7 +53,7 @@ class Queue extends EventEmitter {
     // otherwise memory leaks will occur,
     // and do not call it on minor thread.
     cleanUp() {
-        console.log('[Queue] Cleaning up.');
+        this.emit('debug', '[Queue] Cleaning up.');
         this.tracks = null;
         delete this.tracks
 
@@ -81,7 +81,7 @@ class Queue extends EventEmitter {
     // to update the queue.
     handleNext(isUpdate = false, updateProperties = {}) {
         return new Promise((resolve, reject) => {
-            console.log(isUpdate, updateProperties, this.tracks.length)
+            this.emit('debug', isUpdate, updateProperties, this.tracks.length)
             if (isUpdate) { // is update can bypass the queue lock limit at this time
                 this._isQueueSafe = false;
                 this.updating = true;
@@ -142,7 +142,7 @@ class Queue extends EventEmitter {
         // console.log("[Queue] State change triggered", state1.status, 'to', state2.status);
         if (state1.status !== AudioPlayerStatus.Idle && state2.status === AudioPlayerStatus.Idle && !this.updating) {
             this.handleNext().then(() => {
-                console.log('[Queue] Next track.');
+                this.emit('debug', '[Queue] Next track.');
                 this.playing ? this.emit('next', this.playing) : this.emit('end');
             });
         }

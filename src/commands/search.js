@@ -3,7 +3,7 @@ const OPCodes = require('../server/ws/OPCodes')
 
 module.exports = (application, user, message) => {
     application.players.get(user).search(message.query, { searchOne: message.searchOne ? true : false, source: message.source }).then(results => {
-        console.log(results)
+        application.logger.log('debug', results);
         if (message.searchOne) {
             user.send({
                 type: OPCodes.COMMAND_RESPONSE,
